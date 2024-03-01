@@ -2,10 +2,11 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from tensor_dist_viz.tensor import Tensor
+from tensor_dist_viz.dist import Distributition
 
 import networkx as nx
 
-def plotTensor2D(tensor: Tensor, dims: None | tuple = None) -> None:
+def plotTensor2D(tensor: Tensor, dist: Distributition, dims: None | tuple = None) -> None:
     if tensor.order != 2 and not dims and len(dims) != 2:
         raise ValueError("Only 2D tensors are supported, please provide the dimensions to print")
 

@@ -1,5 +1,9 @@
 import numpy as np
 
+_order2npOrder = {
+    "C": "F",
+    "R": "C"
+}
 
 def multi2linearIndex(dims: np.ndarray, indices: np.ndarray, order: np.ndarray = None) -> int:
     if len(indices) != len(dims):
@@ -15,3 +19,6 @@ def multi2linearIndex(dims: np.ndarray, indices: np.ndarray, order: np.ndarray =
         for i in range(len(indices)):
             result += indices[i] * np.prod(dims[:i])
     return result
+
+def order2npOrder(order: str) -> str:
+    return _order2npOrder[order]
