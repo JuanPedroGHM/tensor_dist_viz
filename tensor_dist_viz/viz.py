@@ -6,41 +6,81 @@ from tensor_dist_viz.dist import Distributition
 
 import networkx as nx
 
-def plotTensor2D(tensor: Tensor, dist: Distributition, dims: None | tuple = None) -> None:
-    if tensor.order != 2 and not dims and len(dims) != 2:
+def plotProcessorView2D(tensor: Tensor, distribution: Distributition) -> None:
+    if tensor.order >2:
         raise ValueError("Only 2D tensors are supported, please provide the dimensions to print")
-
-    if dims is None:
-        dims = np.array((0, 1))
+    
+    if distribution._mesh.order > 2:
+        raise ValueError("Only 2D meshes are supported")
+    
+    processor_view = distribution.processorView(tensor)
+    
+    if tensor.order == 1:
+        img_shape = tensor.shape.reshape(-1, 1)
     else:
-        dims = np.array(dims)
+        img_shape = tensor.shape
 
-    img_shape = tensor.shape[dims]
-    img = np.zeros((img_shape[0], img_shape[1], 3), dtype=np.int32) * 100
-    img[0, :, :] = 0
-    img[1, :, :] = 50
-    img[2, :, :] = 100
-
-    img[:, 0, :] += 0
-    img[:, 1, :] += 25
-    img[:, 2, :] += 50
-    img[:, 3, :] += 75
     
-    plt.imshow(img[::-1, :, :], origin="lower", aspect="equal")
-    axs = plt.gca() 
-
-    axs.set_xticks(np.arange(0, img_shape[1], 1))
-    axs.set_yticks(np.arange(0, img_shape[0], 1))
+    subplot_x = distribution._mesh.shape[0]
+    subplot_y = distribution._mesh.shape[1] if len(distribution._mesh.shape) > 1 else 1
     
-    axs.set_yticklabels(np.arange(0, img_shape[0], 1)[::-1])
 
-    axs.set_xticks(np.arange(-.5, img_shape[1], 1), minor=True)
-    axs.set_yticks(np.arange(-.5, img_shape[0], 1), minor=True)
+    fig, axs = plt.subplots(nrows=subplot_y, ncols=subplot_x, figsize=(subplot_x * 3, subplot_y * 3))
     
-    axs.grid(which="minor", color="black", linestyle="-", linewidth=1)
-    axs.tick_params(which="minor", bottom=False, left=False)
+    for p in range(distribution._mesh.size):
+        p_midx = distribution._mesh.getMultiIndex(p)
+        img = processor_view[:, :, p]
+        axs[p_midx[1], p_midx[0]].imshow(img[::-1], origin="lower", aspect="equal", cmap="Greens")
+        
+
+        axs[p_midx[1], p_midx[0]].set_xticks(np.arange(0, img_shape[1], 1))
+        axs[p_midx[1], p_midx[0]].set_yticks(np.arange(0, img_shape[0], 1))
+        
+        axs[p_midx[1], p_midx[0]].set_yticklabels(np.arange(0, img_shape[0], 1)[::-1])
+
+        axs[p_midx[1], p_midx[0]].set_xticks(np.arange(-.5, img_shape[1], 1), minor=True)
+        axs[p_midx[1], p_midx[0]].set_yticks(np.arange(-.5, img_shape[0], 1), minor=True)
+        
+        axs[p_midx[1], p_midx[0]].grid(which="minor", color="black", linestyle="-", linewidth=1)
+        axs[p_midx[1], p_midx[0]].tick_params(which="minor", bottom=False, left=False)
+        axs[p_midx[1], p_midx[0]].title.set_text(f"Processor {p_midx}")
     plt.show()
+
+def plotTensor2D(tensor: Tensor, distribution: Distributition) -> None:
+    if tensor.order >2:
+        raise ValueError("Only 2D tensors are supported, please provide the dimensions to print")
     
+    if distribution._mesh.order > 2:
+        raise ValueError("Only 2D meshes are supported")
+    
+    processor_view = distribution.processorView(tensor)
+    
+    if tensor.order == 1:
+        img_shape = tensor.shape.reshape(-1, 1)
+    else:
+        img_shape = tensor.shape
+    
+    colors = getNColors(distribution._mesh.size)
+    img = np.zeros((*img_shape, 4))
+    for i in range(tensor.size):
+        m_idx = tensor.getMultiIndex(i)
+        img[m_idx[0], m_idx[1], :] = colors[np.argmax(processor_view[m_idx[0], m_idx[1], :])]
+        
+    plt.figure(figsize=(5, 5))
+    axis = plt.gca()
+    axis.imshow(img[::-1], origin="lower", aspect="equal")
+    axis = plt.gca()
+    axis.set_xticks(np.arange(0, img_shape[1], 1))
+    axis.set_yticks(np.arange(0, img_shape[0], 1))
+    
+    axis.set_yticklabels(np.arange(0, img_shape[0], 1)[::-1])
+
+    axis.set_xticks(np.arange(-.5, img_shape[1], 1), minor=True)
+    axis.set_yticks(np.arange(-.5, img_shape[0], 1), minor=True)
+    
+    axis.grid(which="minor", color="black", linestyle="-", linewidth=1)
+    axis.tick_params(which="minor", bottom=False, left=False)
+    plt.show()
 
 def getNColors(n: int, colormap: str = "viridis") -> np.ndarray:
     return mpl.colormaps[colormap].resampled(n).colors
