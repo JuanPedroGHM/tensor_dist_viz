@@ -2,11 +2,11 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from tensor_dist_viz.tensor import Tensor
-from tensor_dist_viz.dist import Distributition
+from tensor_dist_viz.dist import Distribution
 
 import networkx as nx
 
-def plotProcessorView2D(tensor: Tensor, distribution: Distributition) -> None:
+def plotProcessorView2D(tensor: Tensor, distribution: Distribution) -> None:
     if tensor.order >2:
         raise ValueError("Only 2D tensors are supported, please provide the dimensions to print")
     
@@ -46,7 +46,7 @@ def plotProcessorView2D(tensor: Tensor, distribution: Distributition) -> None:
         axs[p_midx[1], p_midx[0]].title.set_text(f"Processor {p_midx}")
     plt.show()
 
-def plotTensor2D(tensor: Tensor, distribution: Distributition) -> None:
+def plotTensor2D(tensor: Tensor, distribution: Distribution) -> None:
     if tensor.order >2:
         raise ValueError("Only 2D tensors are supported, please provide the dimensions to print")
     
@@ -103,3 +103,6 @@ def plot2DMesh(mesh: Tensor) -> None:
     pos = nx.spring_layout(graph)
     nx.draw(graph, pos, node_color=hexColors)
     plt.show()
+    
+def plotTensor3D(tensor: Tensor, distribution: Distribution):
+    pass

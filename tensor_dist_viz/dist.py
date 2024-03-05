@@ -2,7 +2,7 @@ from tensor_dist_viz.tensor import Tensor
 from tensor_dist_viz.util import multi2linearIndex
 import numpy as np
 
-class Distributition:
+class Distribution:
 
     def __init__(self, mesh: Tensor, dims_mapping: tuple[tuple], block_sizes: tuple) -> None:
         if len(dims_mapping) != len(block_sizes):
