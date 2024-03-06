@@ -28,7 +28,7 @@ class Dist(ABC):
         pass
     
     @abstractmethod
-    def getIndexLocation(self, tensor: Tensor, index: int) -> np.ndarray:
+    def getIndexLocation(self, tensor: Tensor, index: int | np.ndarray) -> np.ndarray:
         pass
     
     @abstractmethod
