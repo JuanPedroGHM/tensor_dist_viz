@@ -1,16 +1,17 @@
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from tensor_dist_viz.distributions.dist import Dist
 from tensor_dist_viz.tensor import Tensor
-from tensor_dist_viz.dist import Distribution
+from tensor_dist_viz.distributions.pmesh import PMeshDist
 
 import networkx as nx
 
-def plotProcessorView2D(tensor: Tensor, distribution: Distribution) -> None:
+def plotProcessorView2D(tensor: Tensor, distribution: Dist) -> None:
     if tensor.order >2:
         raise ValueError("Only 2D tensors are supported, please provide the dimensions to print")
     
-    if distribution._mesh.order > 2:
+    if len(distribution.processorArrangement) > 2:
         raise ValueError("Only 2D meshes are supported")
     
     processor_view = distribution.processorView(tensor)
@@ -21,14 +22,14 @@ def plotProcessorView2D(tensor: Tensor, distribution: Distribution) -> None:
         img_shape = tensor.shape
 
     
-    subplot_x = distribution._mesh.shape[0]
-    subplot_y = distribution._mesh.shape[1] if len(distribution._mesh.shape) > 1 else 1
-    
+    processorArragement = distribution.processorArrangement
+    subplot_x = processorArragement[0]
+    subplot_y = processorArragement[1] if len(distribution.processorArrangement) > 1 else 1
 
     fig, axs = plt.subplots(nrows=subplot_y, ncols=subplot_x, figsize=(subplot_x * 3, subplot_y * 3))
     
-    for p in range(distribution._mesh.size):
-        p_midx = distribution._mesh.getMultiIndex(p)
+    for p in range(distribution.numProcessors):
+        p_midx = distribution.getProcessorMultiIndex(p)
         img = processor_view[:, :, p]
         axs[p_midx[1], p_midx[0]].imshow(img[::-1], origin="lower", aspect="equal", cmap="Greens")
         
@@ -46,11 +47,11 @@ def plotProcessorView2D(tensor: Tensor, distribution: Distribution) -> None:
         axs[p_midx[1], p_midx[0]].title.set_text(f"Processor {p_midx}")
     plt.show()
 
-def plotTensor2D(tensor: Tensor, distribution: Distribution) -> None:
+def plotTensor2D(tensor: Tensor, distribution: PMeshDist) -> None:
     if tensor.order >2:
         raise ValueError("Only 2D tensors are supported, please provide the dimensions to print")
     
-    if distribution._mesh.order > 2:
+    if len(distribution.processorArrangement) > 2:
         raise ValueError("Only 2D meshes are supported")
     
     processor_view = distribution.processorView(tensor)
@@ -60,7 +61,7 @@ def plotTensor2D(tensor: Tensor, distribution: Distribution) -> None:
     else:
         img_shape = tensor.shape
     
-    colors = getNColors(distribution._mesh.size)
+    colors = getNColors(distribution.numProcessors)
     img = np.zeros((*img_shape, 4))
     for i in range(tensor.size):
         m_idx = tensor.getMultiIndex(i)
@@ -104,5 +105,5 @@ def plot2DMesh(mesh: Tensor) -> None:
     nx.draw(graph, pos, node_color=hexColors)
     plt.show()
     
-def plotTensor3D(tensor: Tensor, distribution: Distribution):
+def plotTensor3D(tensor: Tensor, distribution: Dist):
     pass
